@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "ComfyUI",
+  "name": "gitmint-th",
   "colors": {
     "primary": "#1A56DB",
     "light": "#1A56DB"
@@ -1152,7 +1152,7 @@
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg",
-    "href": "https://docs.comfy.org"
+    "href": "https://gitmint-th/"
   },
   "appearance": {
     "default": "dark",
