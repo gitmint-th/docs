@@ -9,7 +9,7 @@
   "icons": {
     "library": "fontawesome"
   },
-  "favicon": "/logo.svg",
+  "favicon": "/public/branding/gitmint-th/favicon.svg",
   "navigation": {
     "languages": [
       {
@@ -1150,9 +1150,9 @@
     ]
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
-    "href": "https://gitmint-th/"
+    "light": "/public/branding/gitmint-th/logo.svg",
+    "dark": "/public/branding/gitmint-th/logo.svg",
+    "href": "https://gitmint-th.com"
   },
   "appearance": {
     "default": "dark",
