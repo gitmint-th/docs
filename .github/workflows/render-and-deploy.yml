@@ -33,10 +33,11 @@ jobs:
           done
           echo "--- mint log head ---"; sed -n '1,80p' mint.log || true
 
-      - name: Install Playwright
+      - name: Install Playwright (chromium only)
         run: |
           npm install --no-audit playwright@1.39.0
-          npx playwright install --with-deps
+          # install only chromium to avoid distro-specific apt package issues on runners
+          npx playwright install chromium
 
       - name: Render pages to static HTML
         run: |
