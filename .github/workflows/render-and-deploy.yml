@@ -1,0 +1,94 @@
+name: Render (headless) & Deploy to gh-pages
+
+on:
+  push:
+    branches: [ th-localization-skeleton, main ]
+  workflow_dispatch:
+
+jobs:
+  render-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      PORT: 3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start local preview (mint dev) in background
+        run: |
+          npx mint dev --no-open > mint.log 2>&1 & echo $! > mint.pid
+          for i in {1..30}; do
+            if curl -sS "http://localhost:${PORT}" -o /dev/null; then
+              echo "dev server is up"; break
+            fi
+            echo "waiting for dev server... ($i)"; sleep 2
+          done
+          echo "--- mint log head ---"; sed -n '1,80p' mint.log || true
+
+      - name: Install Playwright (chromium only)
+        run: |
+          npm install --no-audit playwright@1.39.0
+          # install only chromium to avoid distro-specific apt package issues on runners
+          npx playwright install chromium
+
+      - name: Render pages to static HTML
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const { chromium } = require('playwright');
+
+          (async ()=>{
+            const browser = await chromium.launch({ args: ['--no-sandbox'] });
+            const page = await browser.newPage();
+
+            const urls = [
+              'http://localhost:3000/',
+              'http://localhost:3000/get_started/first_generation',
+              'http://localhost:3000/installation/system_requirements',
+              'http://localhost:3000/interface/overview'
+            ];
+
+            const outDir = 'out';
+            fs.rmSync(outDir, { recursive: true, force: true });
+            fs.mkdirSync(outDir, { recursive: true });
+
+            for (const u of urls) {
+              console.log('visiting', u);
+              await page.goto(u, { waitUntil: 'networkidle', timeout: 60000 });
+              const html = await page.content();
+              let rel = u.replace('http://localhost:3000','').replace(/^\//,'');
+              if (!rel) rel = 'index.html';
+              if (!rel.endsWith('.html')) rel = rel.replace(/\/$/,'') + '.html';
+              const file = path.join(outDir, rel);
+              fs.mkdirSync(path.dirname(file), { recursive: true });
+              fs.writeFileSync(file, html, 'utf8');
+              console.log('saved', file);
+            }
+
+            // copy public assets if present
+            const publicDir = 'public';
+            if (fs.existsSync(publicDir)) {
+              const ncp = require('child_process').spawnSync;
+              ncp('cp', ['-r', publicDir, outDir]);
+              console.log('copied public/ to', outDir);
+            }
+
+            await browser.close();
+          })().catch(e=>{ console.error(e); process.exit(1); });
+          NODE
+
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          commit_message: 'ci: render site and publish to gh-pages'
