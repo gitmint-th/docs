@@ -45,6 +45,14 @@ npm run dev
 
 Create a PR. Once it is accepted Vercel will deploy the change to https://docs.comfy.org/
 
+## Preview (gh-pages)
+
+มี preview สาธารณะสำหรับงานที่เราส่งขึ้น `gh-pages` branch — คุณสามารถดูตัวอย่างได้ที่:
+
+- https://gitmint-th.github.io/docs/
+
+(ถ้า Pages ยังไม่เปิดใช้งานใน repository ให้ไปที่ Settings → Pages แล้วชี้เป็น branch `gh-pages`)
+
 ### Generating API Reference Docs
 
 Can either use an OpenAPI file or URL containing the file:
